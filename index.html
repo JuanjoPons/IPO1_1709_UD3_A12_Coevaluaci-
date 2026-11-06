@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Coevaluación Infografías PRL</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<style>
+:root{
+  --bg:#f3f6f5; --surface:#fff; --ink:#15302c; --muted:#5b706c; --line:#d6e0dd;
+  --accent:#0f6b5e; --accent-ink:#fff; --star:#f5a400; --star-off:#cfd8d5; --warn:#b4471f; --ok:#1d7a3e;
+  --display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+  --body:"Atkinson Hyperlegible","Segoe UI",system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#0f1716; --surface:#172321; --ink:#e4eeeb; --muted:#9db1ac; --line:#2a3a37;
+  --accent:#4cc3ae; --accent-ink:#082320; --star:#ffbf2e; --star-off:#3a4b48; --warn:#ff8a5c; --ok:#6fd892; color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5}
+.wrap{max-width:760px;margin:0 auto;padding:28px 16px 60px;display:flex;flex-direction:column;gap:20px}
+h1,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.15}
+h1{font-size:clamp(1.7rem,5vw,2.3rem);font-weight:800}
+h3{font-size:1.05rem;font-weight:600}
+.eyebrow{font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);font-weight:700}
+.lead{color:var(--muted);margin:6px 0 0;max-width:62ch}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:14px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media (max-width:560px){.row{grid-template-columns:1fr}}
+label.f{display:flex;flex-direction:column;gap:6px;font-weight:700;font-size:.95rem;min-width:0}
+input[type=text],select,textarea{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px;width:100%}
+textarea{min-height:80px;resize:vertical}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.crit{display:flex;flex-direction:column;gap:6px;padding-block:14px;border-top:1px solid var(--line)}
+.crit:first-of-type{border-top:0;padding-top:0}
+.crit-head{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.weight{font-size:.8rem;color:var(--muted);white-space:nowrap}
+.hint{color:var(--muted);font-size:.9rem;margin:0}
+.stars{display:flex;align-items:center;gap:2px;flex-wrap:wrap}
+.star{appearance:none;background:none;border:0;padding:4px;cursor:pointer;line-height:0;border-radius:6px}
+.star svg{width:34px;height:34px;fill:var(--star-off);transition:fill .12s,transform .12s}
+.star.on svg{fill:var(--star)}
+.star:hover svg{transform:scale(1.08)}
+.lvl{margin-left:10px;font-size:.92rem;color:var(--muted)}
+.lvl.set{color:var(--ink);font-weight:700}
+.btn{font:inherit;font-weight:700;border:0;border-radius:999px;padding:12px 22px;background:var(--accent);color:var(--accent-ink);cursor:pointer}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+.actions{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.msg.err{color:var(--warn)} .msg.ok{color:var(--ok)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1px solid var(--ok);color:var(--ok);border-radius:999px;padding:4px 12px;font-size:.88rem}
+@media (prefers-reduced-motion:reduce){.star svg{transition:none}.star:hover svg{transform:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Coevaluación · Infografías «Cadena de la prevención»</div>
+    <h1>Valora la presentación de otro grupo</h1>
+    <p class="lead">Elige el grupo que acaba de presentar y puntúa cada criterio de 1 a 5 estrellas. Sé justo y concreto: tu valoración ayuda a mejorar a tus compañeros. No puedes evaluar a tu propio grupo.</p>
+  </header>
+
+  <section class="panel">
+    <div class="row">
+      <label class="f" for="nombre">Tu nombre
+        <input type="text" id="nombre" autocomplete="name" placeholder="Nombre y apellido" maxlength="60">
+      </label>
+      <label class="f" for="propio">Tu grupo
+        <select id="propio"></select>
+      </label>
+    </div>
+    <label class="f" for="evaluado">Grupo que evalúas
+      <select id="evaluado"></select>
+    </label>
+  </section>
+
+  <section class="panel" id="criterios" aria-label="Criterios de la rúbrica"></section>
+
+  <section class="panel">
+    <label class="f" for="comentario">Lo mejor y algo a mejorar (opcional)
+      <textarea id="comentario" maxlength="500" placeholder="Ej.: La analogía del vaso que se llena se entendió muy bien. Faltaba citar la fuente del dato."></textarea>
+    </label>
+    <div class="actions">
+      <button class="btn" id="enviar" type="button">Enviar valoración</button>
+      <span class="msg" id="msg" role="status" aria-live="polite"></span>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h3>Valoraciones enviadas desde este dispositivo</h3>
+    <div class="chips" id="chips"><span class="hint">Aquí verás los grupos que ya has evaluado. Si te equivocas, vuelve a evaluar el mismo grupo con el mismo nombre y se sustituirá.</span></div>
+  </section>
+</div>
+
+<script>
+/* ⚠️ Pega aquí la URL de tu aplicación web de Apps Script (termina en /exec) */
+const SCRIPT_URL = "PEGA_AQUI_LA_URL_DE_APPS_SCRIPT";
+
+const GRUPOS=[
+  {id:"G1",n:"Grupo 1 · Estrés laboral y bienestar emocional"},
+  {id:"G2",n:"Grupo 2 · Síndrome de burnout"},
+  {id:"G3",n:"Grupo 3 · Acoso laboral (mobbing)"},
+  {id:"G4",n:"Grupo 4 · Agresiones y violencia en el trabajo"},
+  {id:"G5",n:"Grupo 5 · Manipulación manual de cargas"}
+];
+const CRIT=[
+  {id:"c1",w:30,t:"Cadena completa y correcta",d:"Se ven los 5 eslabones (situación → factor → riesgo → daño → prevención) y están bien relacionados."},
+  {id:"c2",w:20,t:"Ejemplos y analogía",d:"El ejemplo es realista y la analogía me ha ayudado a entender el riesgo."},
+  {id:"c3",w:20,t:"Diseño de la infografía",d:"Es clara, con poco texto, iconos y una estructura fácil de seguir."},
+  {id:"c4",w:20,t:"Exposición oral",d:"Se explican con palabras que entiendo, respetan los 5 minutos y hablan todos."},
+  {id:"c5",w:10,t:"Trabajo en equipo y fuentes",d:"Se nota coordinación y citan de dónde sacan los datos."}
+];
+const NIV=["","Muy mejorable","Mejorable","Correcto","Bien","Excelente"];
+const STAR='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.5l-5.9 3.1 1.2-6.5L2.5 9.5l6.6-.9z"/></svg>';
+const $=s=>document.querySelector(s);
+let notas={};
+
+/* Recuerda nombre, grupo y envíos en este navegador (solo comodidad) */
+const LS="coevPRL";
+const load=()=>{try{return JSON.parse(localStorage.getItem(LS))||{}}catch{return{}}};
+const save=o=>{try{localStorage.setItem(LS,JSON.stringify(o))}catch{}};
+let mem=load(); mem.envios=mem.envios||{};
+
+function opts(sel,ph){sel.innerHTML=`<option value="">${ph}</option>`+GRUPOS.map(g=>`<option value="${g.id}">${g.n}</option>`).join("");}
+opts($("#propio"),"Selecciona tu grupo"); opts($("#evaluado"),"Selecciona el grupo que evalúas");
+
+$("#criterios").innerHTML=CRIT.map(c=>`
+  <div class="crit" data-c="${c.id}">
+    <div class="crit-head"><h3 id="t-${c.id}">${c.t}</h3><span class="weight">${c.w} %</span></div>
+    <p class="hint">${c.d}</p>
+    <div class="stars" role="radiogroup" aria-labelledby="t-${c.id}">
+      ${[1,2,3,4,5].map(n=>`<button type="button" class="star" role="radio" aria-checked="false" aria-label="${n} estrella${n>1?"s":""}: ${NIV[n]}" data-n="${n}">${STAR}</button>`).join("")}
+      <span class="lvl" id="l-${c.id}">Sin valorar</span>
+    </div>
+  </div>`).join("");
+document.querySelectorAll(".crit").forEach(box=>{
+  const c=box.dataset.c, btns=[...box.querySelectorAll(".star")];
+  const show=v=>btns.forEach((b,i)=>b.classList.toggle("on",i<v));
+  btns.forEach(b=>{
+    b.addEventListener("mouseenter",()=>show(+b.dataset.n));
+    b.addEventListener("click",()=>{notas[c]=+b.dataset.n;refresca(c);});
+  });
+  box.querySelector(".stars").addEventListener("mouseleave",()=>show(notas[c]||0));
+});
+function refresca(c){
+  const v=notas[c]||0;
+  document.querySelectorAll(`[data-c="${c}"] .star`).forEach((b,i)=>{b.classList.toggle("on",i<v);b.setAttribute("aria-checked",String(i+1===v));});
+  const l=$("#l-"+c); l.textContent=v?NIV[v]:"Sin valorar"; l.classList.toggle("set",!!v);
+}
+function bloqueaPropio(){
+  const p=$("#propio").value;
+  [...$("#evaluado").options].forEach(o=>o.disabled=!!p&&o.value===p);
+  if($("#evaluado").value===p)$("#evaluado").value="";
+}
+$("#propio").addEventListener("change",bloqueaPropio);
+
+const nota10=e=>CRIT.reduce((s,c)=>s+c.w*((e[c.id]||0)/5),0)/10;
+const msg=(t,k)=>{const m=$("#msg");m.textContent=t;m.className="msg "+(k||"");};
+function pintaChips(){
+  const ids=Object.keys(mem.envios).sort();
+  if(ids.length)$("#chips").innerHTML=ids.map(id=>`<span class="chip">${id} · ${mem.envios[id].toFixed(1)}/10</span>`).join("");
+}
+if(mem.nombre)$("#nombre").value=mem.nombre;
+if(mem.grupo){$("#propio").value=mem.grupo;bloqueaPropio();}
+pintaChips();
+
+$("#enviar").addEventListener("click",async()=>{
+  const nombre=$("#nombre").value.trim(), grupo=$("#propio").value, ev=$("#evaluado").value;
+  if(!nombre)return msg("Escribe tu nombre.","err");
+  if(!grupo)return msg("Indica tu grupo.","err");
+  if(!ev)return msg("Elige el grupo que evalúas.","err");
+  const falta=CRIT.filter(c=>!notas[c.id]);
+  if(falta.length)return msg(`Falta valorar: ${falta.map(c=>c.t).join(", ")}.`,"err");
+  if(!SCRIPT_URL.startsWith("https://"))return msg("El formulario aún no está conectado a la hoja de cálculo. Avisa al docente.","err");
+
+  const datos={nombre,grupo,evaluado:ev,...notas,comentario:$("#comentario").value.trim()};
+  $("#enviar").disabled=true; msg("Enviando…");
+  try{
+    // text/plain evita la comprobación CORS previa que Apps Script no admite
+    const r=await fetch(SCRIPT_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(datos)});
+    const j=await r.json();
+    if(!j.ok)throw new Error(j.error||"Error desconocido");
+    mem.nombre=nombre; mem.grupo=grupo; mem.envios[ev]=nota10(notas); save(mem); pintaChips();
+    msg(`Valoración de ${ev} enviada (${nota10(notas).toFixed(1)}/10). ¡Gracias!`,"ok");
+    $("#evaluado").value=""; notas={}; CRIT.forEach(c=>refresca(c.id)); $("#comentario").value="";
+  }catch(e){
+    msg("No se ha podido enviar: "+(e.message||"revisa la conexión")+". Inténtalo de nuevo.","err");
+  }finally{ $("#enviar").disabled=false; }
+});
+</script>
+</body>
+</html>
